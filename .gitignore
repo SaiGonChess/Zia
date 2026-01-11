@@ -15,3 +15,5 @@ bun.lockb
 data/
 # Keep drizzle migrations in git
 # drizzle/
+
+.next/
