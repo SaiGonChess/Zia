@@ -134,6 +134,8 @@ export interface BotConfig {
   useStreaming: boolean;
   useCharacter: boolean;
   fileLogging: boolean;
+  logFile: string;
+  unauthorizedLogFile: string;
   maxToolDepth: number;
   showToolCalls: boolean;
   allowNSFW: boolean;
@@ -195,6 +197,147 @@ export interface BackgroundAgentConfig {
   allowedTools: string[];
 }
 
+export interface RetryConfig {
+  maxRetries?: number;
+  baseDelayMs?: number;
+  retryableStatusCodes?: number[];
+}
+
+export interface HistoryLoaderConfig {
+  enabled?: boolean;
+  loadFromDb?: boolean;
+  defaultLimit?: number;
+  minDelayMs?: number;
+  maxDelayMs?: number;
+  pageTimeoutMs?: number;
+  loadUser?: boolean;
+  loadGroup?: boolean;
+}
+
+export interface FetchConfig {
+  timeoutMs?: number;
+  maxRetries?: number;
+  retryDelayMs?: number;
+  maxTextConvertSizeMB?: number;
+}
+
+export interface StickersConfig {
+  keywords?: string[];
+}
+
+export interface LoggerConfig {
+  maxLinesPerFile?: number;
+  logCacheThreshold?: number;
+}
+
+export interface ReactionConfig {
+  debounceMs?: number;
+}
+
+export interface FriendRequestConfig {
+  autoAcceptDelayMinMs?: number;
+  autoAcceptDelayMaxMs?: number;
+}
+
+export interface MessageChunkerConfig {
+  maxMessageLength?: number;
+}
+
+export interface MessageStoreConfig {
+  maxCachePerThread?: number;
+  cleanupIntervalMs?: number;
+  recentMessageWindowMs?: number;
+  maxUndoTimeMs?: number;
+}
+
+export interface JikanConfig {
+  rateLimitDelayMs?: number;
+  timeoutMs?: number;
+  retryLimit?: number;
+  backoffLimitMs?: number;
+}
+
+export interface ElevenLabsConfig {
+  defaultVoiceId?: string;
+  defaultModelId?: string;
+  defaultStability?: number;
+  defaultSimilarityBoost?: number;
+  defaultStyle?: number;
+}
+
+export interface GiphyConfig {
+  timeoutMs?: number;
+  defaultLimit?: number;
+  defaultRating?: string;
+  retryLimit?: number;
+}
+
+export interface NekosConfig {
+  timeoutMs?: number;
+  retryLimit?: number;
+}
+
+export interface FreepikConfig {
+  timeoutMs?: number;
+  pollMaxAttempts?: number;
+  pollIntervalMs?: number;
+  retryLimit?: number;
+}
+
+export interface MessageSenderConfig {
+  mediaDelayMs?: number;
+  chunkDelayMs?: number;
+}
+
+export interface MarkdownConfig {
+  mermaidTimeoutMs?: number;
+  groupMediaSizeLimitMB?: number;
+}
+
+export interface TvuConfig {
+  timeoutMs?: number;
+  retryLimit?: number;
+}
+
+export interface GroqConfig {
+  rateLimitCooldownMs?: number;
+}
+
+export interface DatabaseConfig {
+  path?: string;
+  cleanupIntervalMs?: number;
+  embeddingDim?: number;
+  cacheSize?: number;
+}
+
+export interface ResponseHandlerConfig {
+  reactionDelayMs?: number;
+  chunkDelayMs?: number;
+  stickerDelayMs?: number;
+  cardDelayMs?: number;
+  messageDelayMinMs?: number;
+  messageDelayMaxMs?: number;
+  imageDelayMs?: number;
+}
+
+export interface GroupMembersFetchConfig {
+  delayMinMs?: number;
+  delayMaxMs?: number;
+  errorDelayMinMs?: number;
+  errorDelayMaxMs?: number;
+}
+
+export interface GoogleTtsConfig {
+  defaultLanguage?: string;
+  defaultSpeakingRate?: number;
+  defaultVolumeGainDb?: number;
+}
+
+export interface SandboxConfig {
+  installTimeoutMs?: number;
+  executeTimeoutMs?: number;
+}
+
 export interface BotSettings {
   adminUserId: string;
   bot: BotConfig;
@@ -207,6 +350,32 @@ export interface BotSettings {
   cloudBackup: CloudBackupConfig;
   backgroundAgent: BackgroundAgentConfig;
   allowedUserIds: string[];
+  blockedUserIds: string[];
+  retry?: RetryConfig;
+  historyLoader?: HistoryLoaderConfig;
+  fetch?: FetchConfig;
+  stickers?: StickersConfig;
+  logger?: LoggerConfig;
+  reaction?: ReactionConfig;
+  friendRequest?: FriendRequestConfig;
+  messageChunker?: MessageChunkerConfig;
+  messageStore?: MessageStoreConfig;
+  jikan?: JikanConfig;
+  elevenlabs?: ElevenLabsConfig;
+  giphy?: GiphyConfig;
+  nekos?: NekosConfig;
+  freepik?: FreepikConfig;
+  messageSender?: MessageSenderConfig;
+  markdown?: MarkdownConfig;
+  tvu?: TvuConfig;
+  groq?: GroqConfig;
+  database?: DatabaseConfig;
+  responseHandler?: ResponseHandlerConfig;
+  groupMembersFetch?: GroupMembersFetchConfig;
+  sandbox?: SandboxConfig;
+  googleTts?: GoogleTtsConfig;
+  jikanRateLimitRetryMs?: number;
+  websocketConnectTimeoutMs?: number;
   [key: string]: unknown;
 }
 

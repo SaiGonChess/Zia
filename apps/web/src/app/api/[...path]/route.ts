@@ -4,8 +4,8 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 
-const BOT_API_URL = process.env.BOT_API_URL || 'http://localhost:3001/api';
-const BOT_API_KEY = process.env.BOT_API_KEY || '';
+const BOT_API_URL = process.env.BOT_API_URL || 'http://localhost:10000/api';
+const BOT_API_KEY = process.env.BOT_API_KEY || process.env.API_KEY || '';
 
 // Paths that return binary/file responses
 const BINARY_PATHS = ['backup/download', 'logs/download'];

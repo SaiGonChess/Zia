@@ -215,6 +215,14 @@ function registerReactionListener(api: any): void {
       return;
     }
 
+    // Kiểm tra user được phép (để lưu context/trả lời)
+    // Lấy tên reactor từ data nếu có
+    const reactorName = data?.dName || '';
+    if (!isAllowedUser(reactorId, reactorName)) {
+      debugLog('REACTION', `Ignoring reaction from unauthorized user: ${reactorName} (${reactorId})`);
+      return;
+    }
+
     // Log tất cả các loại msgId để debug
     debugLog(
       'REACTION',

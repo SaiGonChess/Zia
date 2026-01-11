@@ -27,6 +27,7 @@ import {
   isBotMentioned,
 } from '../classifier.js';
 import { checkRateLimit, markApiCall } from '../guards/rate-limit.guard.js';
+import { isAllowedUser } from '../guards/user.filter.js';
 import { createStreamCallbacks, sendResponse } from '../handlers/response.handler.js';
 import { handleToolCalls, isToolOnlyResponse } from '../handlers/tool.handler.js';
 import { startTypingWithRefresh } from '../services/message.buffer.js';
@@ -55,6 +56,15 @@ export async function handleMixedContent(
         .join(', '),
   );
   logStep('handleMixedContent', { threadId, counts, total: messages.length });
+
+  // 1b. Kiểm tra user được phép (Double check)
+  const lastMsg = messages[messages.length - 1];
+  const senderId = lastMsg.data?.uidFrom || threadId;
+  const senderName = lastMsg.data?.dName || '';
+  if (!isAllowedUser(senderId, senderName)) {
+    debugLog('MIXED', `Bỏ qua user không được phép: ${senderName} (${senderId})`);
+    return;
+  }
 
   try {
     // 2. Xác định loại Thread (User hay Group)

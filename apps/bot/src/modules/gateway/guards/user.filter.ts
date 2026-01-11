@@ -31,13 +31,19 @@ const loggedUnauthorizedUsers = new Set<string>();
  * Kiểm tra user có được phép sử dụng bot không (theo ID)
  */
 export function isAllowedUser(userId: string, userName: string): boolean {
-  // Nếu danh sách rỗng, cho phép tất cả
+  // 1. Kiểm tra ID có trong danh sách chặn (Blacklist) - Ưu tiên cao nhất
+  if (CONFIG.blockedUserIds && CONFIG.blockedUserIds.includes(userId)) {
+    debugLog('USER_FILTER', `Blocked (Blacklist): id=${userId}, name="${userName}"`);
+    return false;
+  }
+
+  // 2. Nếu danh sách trắng (Whitelist) rỗng, cho phép tất cả
   if (!CONFIG.allowedUserIds || CONFIG.allowedUserIds.length === 0) {
     debugLog('USER_FILTER', `Allowed (no filter): id=${userId}, name="${userName}"`);
     return true;
   }
 
-  // Kiểm tra ID có trong danh sách không
+  // 3. Kiểm tra ID có trong danh sách trắng không
   const allowed = CONFIG.allowedUserIds.includes(userId);
   debugLog(
     'USER_FILTER',
@@ -141,6 +147,36 @@ export function getAllowedUserIds(): string[] {
 }
 
 /**
+ * Thêm user ID vào danh sách chặn (Blacklist)
+ */
+export function addBlockedUserId(userId: string): boolean {
+  if (!CONFIG.blockedUserIds) (CONFIG as any).blockedUserIds = [];
+  if (CONFIG.blockedUserIds.includes(userId)) return false;
+  CONFIG.blockedUserIds.push(userId);
+  saveSettings();
+  return true;
+}
+
+/**
+ * Xóa user ID khỏi danh sách chặn (Blacklist)
+ */
+export function removeBlockedUserId(userId: string): boolean {
+  if (!CONFIG.blockedUserIds) return false;
+  const index = CONFIG.blockedUserIds.indexOf(userId);
+  if (index === -1) return false;
+  CONFIG.blockedUserIds.splice(index, 1);
+  saveSettings();
+  return true;
+}
+
+/**
+ * Lấy danh sách user IDs bị chặn
+ */
+export function getBlockedUserIds(): string[] {
+  return CONFIG.blockedUserIds || [];
+}
+
+/**
  * Lấy danh sách người dùng chưa được cấp phép từ file
  */
 export function getUnauthorizedUsers(): Array<{
@@ -167,6 +203,7 @@ function saveSettings() {
   const data = fs.readFileSync(settingsPath, 'utf-8');
   const settings = JSON.parse(data);
   settings.allowedUserIds = CONFIG.allowedUserIds;
+  settings.blockedUserIds = CONFIG.blockedUserIds;
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
-  console.log('[Config] ✅ Đã lưu danh sách user IDs');
+  console.log('[Config] ✅ Đã lưu danh sách user IDs và blacklist');
 }

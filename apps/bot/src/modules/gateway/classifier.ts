@@ -12,6 +12,7 @@ export type MessageType =
   | 'gif'
   | 'link'
   | 'contact'
+  | 'location'
   | 'doodle'
   | 'friend_added'
   | 'system'
@@ -176,6 +177,32 @@ export function classifyMessage(msg: any): ClassifiedMessage {
       const text = title || url;
       return { type: 'link', message: msg, url, text, senderName, senderId };
     }
+  }
+
+  // Location (định vị)
+  if (msgType.includes('location')) {
+    const title = content?.title || '';
+    const address = content?.address || content?.desc || content?.description || (typeof content === 'string' ? content : '');
+    
+    let lat = content?.lat || '';
+    let lng = content?.lng || '';
+
+    // Parse params nếu có (Zalo thường gửi tọa độ trong params JSON string)
+    if (content?.params && typeof content.params === 'string') {
+      try {
+        const params = JSON.parse(content.params);
+        lat = lat || params.latitude || params.lat || '';
+        lng = lng || params.longitude || params.lng || '';
+      } catch {}
+    }
+    
+    return {
+      type: 'location',
+      message: msg,
+      text: `[Vị trí] ${title}${address ? ` - ${address}` : ''}${lat ? ` (Vĩ độ: ${lat}, Kinh độ: ${lng})` : ''}`,
+      senderName,
+      senderId,
+    };
   }
 
   // Doodle (vẽ hình)

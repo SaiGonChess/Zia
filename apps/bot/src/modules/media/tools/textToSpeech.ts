@@ -16,6 +16,7 @@ import {
   OUTPUT_FORMATS,
   textToSpeech,
 } from '../services/elevenlabsClient.js';
+import { googleTTS } from '../services/googleTTSClient.js';
 
 export const textToSpeechTool: ITool = {
   name: 'textToSpeech',
@@ -89,13 +90,32 @@ Trả về file âm thanh MP3 có thể phát trực tiếp.`,
         },
       };
     } catch (error: any) {
-      if (error.message?.includes('API key')) {
-        return { success: false, error: 'Lỗi xác thực: API key không hợp lệ hoặc chưa cấu hình' };
+      console.warn(`[TTS] ElevenLabs lỗi, chuyển sang Google Standard: ${error.message}`);
+      try {
+        const audioBuffer = await googleTTS(data.text);
+        return {
+          success: true,
+          data: {
+            audio: audioBuffer,
+            audioBase64: audioBuffer.toString('base64'),
+            mimeType: 'audio/mpeg',
+            format: 'mp3',
+            textLength: data.text.length,
+            voiceId: 'google-standard',
+            voiceName: 'Google Standard (Fallback)',
+            model: 'google-translate',
+            isFallback: true,
+          },
+        };
+      } catch (fallbackError: any) {
+        if (error.message?.includes('API key')) {
+          return { success: false, error: 'Lỗi xác thực: API key không hợp lệ hoặc chưa cấu hình' };
+        }
+        if (error.message?.includes('quota') || error.message?.includes('limit')) {
+          return { success: false, error: 'Đã hết quota ElevenLabs và Google fallback cũng lỗi.' };
+        }
+        return { success: false, error: `Lỗi TTS: ${error.message} (Fallback error: ${fallbackError.message})` };
       }
-      if (error.message?.includes('quota') || error.message?.includes('limit')) {
-        return { success: false, error: 'Đã hết quota ElevenLabs. Vui lòng thử lại sau.' };
-      }
-      return { success: false, error: `Lỗi TTS: ${error.message}` };
     }
   },
 };

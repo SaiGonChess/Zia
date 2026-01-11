@@ -19,7 +19,7 @@ export function buildPrompt(
 ): string {
   const hasMedia =
     classified.some((c) =>
-      ['image', 'video', 'voice', 'file', 'sticker', 'doodle', 'gif', 'contact'].includes(c.type),
+      ['image', 'video', 'voice', 'file', 'sticker', 'doodle', 'gif', 'contact', 'location'].includes(c.type),
     ) || quoteHasMedia;
 
   let prompt: string;
@@ -97,7 +97,7 @@ export function buildPrompt(
  */
 export function extractTextFromMessages(classified: ClassifiedMessage[]): string {
   return classified
-    .filter((c) => ['text', 'link', 'contact', 'friend_added', 'system'].includes(c.type))
+    .filter((c) => ['text', 'link', 'contact', 'location', 'friend_added', 'system'].includes(c.type))
     .map((c) => c.text || c.url || '')
     .filter(Boolean)
     .join('\n');

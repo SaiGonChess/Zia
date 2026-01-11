@@ -1,23 +1,13 @@
 {
-  "adminUserId": "7307295734920277074",
-  "fetch": {
-    "timeoutMs": 60000,
-    "maxRetries": 3,
-    "retryDelayMs": 2000,
-    "maxTextConvertSizeMB": 20
-  },
-  "buffer": {
-    "delayMs": 2500,
-    "typingRefreshMs": 3000
-  },
+  "adminUserId": "8867542199450989031",
   "bot": {
-    "name": "Trợ lý AI Zalo",
+    "name": "Bạn anh Thiện",
     "prefix": "#bot",
     "requirePrefix": false,
     "rateLimitMs": 0,
     "maxTokenHistory": 300000,
     "maxInputTokens": 200000,
-    "selfListen": true,
+    "selfListen": false,
     "logging": true,
     "useStreaming": true,
     "useCharacter": false,
@@ -26,13 +16,13 @@
     "unauthorizedLogFile": "logs/unauthorized.json",
     "maxToolDepth": 10,
     "showToolCalls": false,
-    "allowNSFW": false,
+    "allowNSFW": true,
     "cloudDebug": {
       "enabled": false,
       "prefix": "#bot"
     },
     "sleepMode": {
-      "enabled": true,
+      "enabled": false,
       "sleepHour": 23,
       "wakeHour": 6,
       "checkIntervalMs": 1800000
@@ -41,6 +31,17 @@
       "enabled": false,
       "message": "🔧 Bot đang trong chế độ bảo trì. Vui lòng thử lại sau!"
     }
+  },
+  "retry": {
+    "maxRetries": 10,
+    "baseDelayMs": 1000,
+    "retryableStatusCodes": [
+      503,
+      429,
+      500,
+      502,
+      504
+    ]
   },
   "historyLoader": {
     "enabled": false,
@@ -52,12 +53,26 @@
     "loadUser": true,
     "loadGroup": false
   },
-  "retry": {
-    "maxRetries": 10,
-    "baseDelayMs": 1000,
-    "retryableStatusCodes": [503, 429, 500, 502, 504]
+  "buffer": {
+    "delayMs": 2500,
+    "typingRefreshMs": 3000
   },
-  "allowedUserIds": [],
+  "fetch": {
+    "timeoutMs": 60000,
+    "maxRetries": 3,
+    "retryDelayMs": 2000,
+    "maxTextConvertSizeMB": 20
+  },
+  "modules": {
+    "system": true,
+    "chat": true,
+    "media": true,
+    "search": true,
+    "social": true,
+    "task": true,
+    "academic": true,
+    "entertainment": true
+  },
   "stickers": {
     "keywords": [
       "hello",
@@ -74,16 +89,11 @@
       "goodnight"
     ]
   },
-  "modules": {
-    "system": true,
-    "chat": true,
-    "media": true,
-    "search": true,
-    "social": true,
-    "task": true,
-    "academic": true,
-    "entertainment": true
-  },
+  "allowedUserIds": [
+    "8867542199450989031",
+    "4292093347583012472"
+  ],
+  "blockedUserIds": [],
   "logger": {
     "maxLinesPerFile": 1000,
     "logCacheThreshold": 1000
@@ -102,7 +112,11 @@
     "batchDelayMinMs": 500,
     "batchDelayMaxMs": 1500,
     "groqEnabled": true,
-    "allowedTools": ["googleSearch", "saveMemory", "recallMemory"]
+    "allowedTools": [
+      "googleSearch",
+      "saveMemory",
+      "recallMemory"
+    ]
   },
   "messageChunker": {
     "maxMessageLength": 1800
@@ -112,9 +126,6 @@
     "cleanupIntervalMs": 1800000,
     "recentMessageWindowMs": 300000,
     "maxUndoTimeMs": 120000
-  },
-  "userStore": {
-    "cacheTtlMs": 300000
   },
   "jikan": {
     "rateLimitDelayMs": 350,
@@ -155,7 +166,7 @@
   },
   "history": {
     "maxTrimAttempts": 50,
-    "maxContextTokens": 300000,
+    "maxContextTokens": 40000,
     "estimatedCharsPerToken": 4
   },
   "memory": {

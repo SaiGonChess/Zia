@@ -12,5 +12,8 @@
     "format": "bun run --cwd apps/bot format",
     "test": "bun run --cwd apps/bot test",
     "test:integration": "bun run --cwd apps/bot test:integration"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.5.0"
   }
 }

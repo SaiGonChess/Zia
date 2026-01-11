@@ -8,3 +8,4 @@ export {
   getSeedreamTaskStatus,
   pollTaskUntilComplete,
 } from './freepikClient.js';
+export { googleTTS } from './googleTTSClient.js';

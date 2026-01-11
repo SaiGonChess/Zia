@@ -83,15 +83,78 @@ function shouldSendMessage(newText: string, sentTexts: string[]): boolean {
   return true;
 }
 
-const VALID_REACTIONS = new Set(['heart', 'haha', 'wow', 'sad', 'angry', 'like']);
+// Base Zalo reactions
+const ZALO_REACTIONS = new Set(['heart', 'haha', 'wow', 'sad', 'angry', 'like']);
 
-// Regex patterns để strip tags
+// Map emoji/text to base Zalo reaction
+const EMOJI_TO_REACTION: Record<string, string> = {
+  // Heart variants -> heart
+  '❤️': 'heart', '❤': 'heart', '💖': 'heart', '💕': 'heart', '💗': 'heart',
+  '💓': 'heart', '💘': 'heart', '💝': 'heart', '💞': 'heart', '🥰': 'heart',
+  '😍': 'heart', '🤗': 'heart', '💔': 'heart',
+  
+  // Like/thumbs up variants -> like
+  '👍': 'like', '👍🏻': 'like', '👍🏼': 'like', '👍🏽': 'like', '👍🏾': 'like', '👍🏿': 'like',
+  '👏': 'like', '🙌': 'like', '🫡': 'like', '✨': 'like', '🎉': 'like', '🥳': 'like',
+  '🤩': 'like', '😎': 'like', '🔥': 'like', '💯': 'like',
+  
+  // Thumbs down -> angry
+  '👎': 'angry',
+  
+  // Haha/funny variants -> haha
+  '😂': 'haha', '🤣': 'haha', '😆': 'haha', '😁': 'haha', '😄': 'haha',
+  '🤭': 'haha', '😜': 'haha', '😝': 'haha', '🤪': 'haha', '🙃': 'haha',
+  '🤤': 'haha', '🥲': 'haha',
+  
+  // Wow/surprised variants -> wow
+  '😮': 'wow', '😯': 'wow', '😲': 'wow', '🤯': 'wow', '😱': 'wow',
+  '😳': 'wow', '🫣': 'wow', '🫠': 'wow', '🧐': 'wow', '🤓': 'wow',
+  '😦': 'wow', '😧': 'wow', '😨': 'wow',
+  
+  // Sad variants -> sad
+  '😢': 'sad', '😭': 'sad', '🥺': 'sad', '😿': 'sad', '💧': 'sad',
+  '😰': 'sad', '😥': 'sad', '😓': 'sad', '😞': 'sad', '😔': 'sad',
+  
+  // Angry variants -> angry
+  '😡': 'angry', '😠': 'angry', '🤬': 'angry', '💢': 'angry', '👿': 'angry',
+  '😤': 'angry', '🙄': 'angry',
+  
+  // Neutral/thinking -> like (default to positive)
+  '🤔': 'like', '🤨': 'like', '🥸': 'like', '🤡': 'like',
+  '😶': 'like', '😐': 'like', '😑': 'like', '😬': 'like',
+  '🤫': 'like', '🤥': 'like',
+};
+
+// Combined valid reactions
+const VALID_REACTIONS = new Set([
+  ...ZALO_REACTIONS,
+  ...Object.keys(EMOJI_TO_REACTION),
+]);
+
+/**
+ * Normalize reaction: convert emoji/variant to base Zalo reaction
+ */
+function normalizeReaction(reaction: string): string | null {
+  const lower = reaction.toLowerCase();
+  
+  if (ZALO_REACTIONS.has(lower)) {
+    return lower;
+  }
+  
+  if (EMOJI_TO_REACTION[reaction]) {
+    return EMOJI_TO_REACTION[reaction];
+  }
+  
+  return null;
+}
+
+// Regex patterns để strip tags - hỗ trợ cả emoji
 const TAG_PATTERNS = [
-  /\[reaction:(\d+:)?\w+\]/gi,
+  /\[reaction:(\d+:)?[^\]]+\]/gi, // Hỗ trợ emoji
   /\[sticker:\w+\]/gi,
   /\[quote:-?\d+\][\s\S]*?\[\/quote\]/gi,
   /\[msg\][\s\S]*?\[\/msg\]/gi,
-  /\[undo:(?:-?\d+:-?\d+|-?\d+|all)\]/gi, // Hỗ trợ [undo:-1], [undo:-1:-3], [undo:all]
+  /\[undo:(?:-?\d+:-?\d+|-?\d+|all)\]/gi,
   /\[card(?::\d+)?\]/gi,
   /\[tool:\w+(?:\s+[^\]]*?)?\](?:\s*\{[\s\S]*?\}\s*\[\/tool\])?/gi,
   /\[image:https?:\/\/[^\]]+\][\s\S]*?\[\/image\]/gi,
@@ -101,11 +164,11 @@ function getPlainText(buffer: string): string {
   return TAG_PATTERNS.reduce((text, pattern) => text.replace(pattern, ''), buffer).trim();
 }
 
-// Inline tag patterns để strip khỏi text content
+// Inline tag patterns để strip khỏi text content - hỗ trợ emoji
 const INLINE_TAG_PATTERNS = [
-  /\[reaction:(\d+:)?\w+\]/gi,
+  /\[reaction:(\d+:)?[^\]]+\]/gi, // Hỗ trợ emoji
   /\[sticker:\w+\]/gi,
-  /\[undo:(?:-?\d+:-?\d+|-?\d+|all)\]/gi, // Hỗ trợ [undo:-1], [undo:-1:-3], [undo:all]
+  /\[undo:(?:-?\d+:-?\d+|-?\d+|all)\]/gi,
   /\[card(?::\d+)?\]/gi,
 ];
 
@@ -162,15 +225,19 @@ async function processInlineTags(
     }
   }
 
-  // Extract reactions (không có index vì đang trong msg block)
-  for (const match of text.matchAll(/\[reaction:(\d+:)?(\w+)\]/gi)) {
+  // Extract reactions (không có index vì đang trong msg block) - hỗ trợ emoji
+  for (const match of text.matchAll(/\[reaction:(\d+:)?([^\]]+)\]/gi)) {
     const indexPart = match[1];
-    const reaction = match[2].toLowerCase();
-    const key = indexPart ? `reaction:${indexPart}${reaction}` : `reaction:${reaction}`;
-    if (VALID_REACTIONS.has(reaction) && !state.sentReactions.has(key) && callbacks.onReaction) {
+    const rawReaction = match[2].trim();
+    const normalizedReaction = normalizeReaction(rawReaction);
+    
+    if (!normalizedReaction) continue;
+    
+    const key = indexPart ? `reaction:${indexPart}${normalizedReaction}` : `reaction:${normalizedReaction}`;
+    if (!state.sentReactions.has(key) && callbacks.onReaction) {
       state.sentReactions.add(key);
       await callbacks.onReaction(
-        indexPart ? `${indexPart.replace(':', '')}:${reaction}` : reaction,
+        indexPart ? `${indexPart.replace(':', '')}:${normalizedReaction}` : normalizedReaction,
       );
     }
   }
@@ -192,15 +259,19 @@ async function processStreamChunk(state: ParserState, callbacks: StreamCallbacks
   // Fix stuck tags trước khi parse
   const buffer = fixStuckTags(state.buffer);
 
-  // Parse top-level [reaction:xxx] hoặc [reaction:INDEX:xxx]
-  for (const match of buffer.matchAll(/\[reaction:(\d+:)?(\w+)\]/gi)) {
+  // Parse top-level [reaction:xxx] hoặc [reaction:INDEX:xxx] - hỗ trợ emoji
+  for (const match of buffer.matchAll(/\[reaction:(\d+:)?([^\]]+)\]/gi)) {
     const indexPart = match[1];
-    const reaction = match[2].toLowerCase();
-    const key = indexPart ? `reaction:${indexPart}${reaction}` : `reaction:${reaction}`;
-    if (VALID_REACTIONS.has(reaction) && !state.sentReactions.has(key) && callbacks.onReaction) {
+    const rawReaction = match[2].trim();
+    const normalizedReaction = normalizeReaction(rawReaction);
+    
+    if (!normalizedReaction) continue;
+    
+    const key = indexPart ? `reaction:${indexPart}${normalizedReaction}` : `reaction:${normalizedReaction}`;
+    if (!state.sentReactions.has(key) && callbacks.onReaction) {
       state.sentReactions.add(key);
       await callbacks.onReaction(
-        indexPart ? `${indexPart.replace(':', '')}:${reaction}` : reaction,
+        indexPart ? `${indexPart.replace(':', '')}:${normalizedReaction}` : normalizedReaction,
       );
     }
   }

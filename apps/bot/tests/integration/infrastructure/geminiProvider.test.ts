@@ -123,6 +123,68 @@ describe('parseAIResponse', () => {
     const result = parseAIResponse(text);
     expect(result.reactions).toContain('0:heart');
   });
+
+  // Tests for emoji reactions - new feature
+  test('Parse emoji reactions - heart variants', () => {
+    const text = '[reaction:❤️] [reaction:💖] [reaction:🥰]';
+    
+    const result = parseAIResponse(text);
+    expect(result.reactions).toContain('heart');
+    // Multiple same reactions are deduplicated
+    expect(result.reactions.filter(r => r === 'heart').length).toBe(3);
+  });
+
+  test('Parse emoji reactions - like variants', () => {
+    const text = '[reaction:👍] [reaction:🔥] [reaction:🎉]';
+    
+    const result = parseAIResponse(text);
+    expect(result.reactions).toContain('like');
+  });
+
+  test('Parse emoji reactions - haha variants', () => {
+    const text = '[reaction:😂] [reaction:🤣]';
+    
+    const result = parseAIResponse(text);
+    expect(result.reactions).toContain('haha');
+  });
+
+  test('Parse emoji reactions - wow variants', () => {
+    const text = '[reaction:😮] [reaction:🤯] [reaction:😱]';
+    
+    const result = parseAIResponse(text);
+    expect(result.reactions).toContain('wow');
+  });
+
+  test('Parse emoji reactions - sad variants', () => {
+    const text = '[reaction:😢] [reaction:😭]';
+    
+    const result = parseAIResponse(text);
+    expect(result.reactions).toContain('sad');
+  });
+
+  test('Parse emoji reactions - angry variants', () => {
+    const text = '[reaction:😡] [reaction:🤬] [reaction:👎]';
+    
+    const result = parseAIResponse(text);
+    expect(result.reactions).toContain('angry');
+  });
+
+  test('Parse indexed emoji reaction', () => {
+    const text = '[reaction:0:❤️] [reaction:1:😂]';
+    
+    const result = parseAIResponse(text);
+    expect(result.reactions).toContain('0:heart');
+    expect(result.reactions).toContain('1:haha');
+  });
+
+  test('Mixed text and emoji reactions', () => {
+    const text = '[reaction:heart] [reaction:🔥] [msg]Cool![/msg]';
+    
+    const result = parseAIResponse(text);
+    expect(result.reactions).toContain('heart');
+    expect(result.reactions).toContain('like');
+    expect(result.messages.some(m => m.text === 'Cool!')).toBe(true);
+  });
 });
 
 describe('KeyManager', () => {

@@ -97,6 +97,7 @@ function buildConfig(settings: Settings) {
     sleepMode: settings.bot.sleepMode,
     maintenanceMode: settings.bot.maintenanceMode,
     allowedUserIds: settings.allowedUserIds,
+    blockedUserIds: settings.blockedUserIds,
     retry: settings.retry,
     stickerKeywords: settings.stickers.keywords,
     historyLoader: settings.historyLoader,

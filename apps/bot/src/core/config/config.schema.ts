@@ -357,6 +357,7 @@ export const SettingsSchema = z.object({
     keywords: [],
   }),
   allowedUserIds: z.array(z.string()).default([]),
+  blockedUserIds: z.array(z.string()).default([]),
   logger: LoggerConfigSchema.optional().default({
     maxLinesPerFile: 1000,
     logCacheThreshold: 1000,

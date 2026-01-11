@@ -18,6 +18,7 @@ import {
   generateGroqResponse,
 } from '../../infrastructure/ai/providers/groq/groqClient.js';
 import { executeTask } from './action.executor.js';
+import { isAllowedUser } from '../gateway/guards/user.filter.js';
 import { buildEnvironmentContext, formatContextForPrompt } from './context.builder.js';
 import { getNextCronTime } from './cron.utils.js';
 import {
@@ -88,10 +89,29 @@ async function runAgentCycle(): Promise<void> {
       return;
     }
 
-    debugLog('AGENT', `Processing ${tasks.length} tasks in parallel`);
+    // 2. Lọc bỏ các task của user bị chặn hoặc không được phép để tiết kiệm token
+    const filteredTasks = [];
+    for (const task of tasks) {
+      const userId = task.targetUserId || task.createdBy;
+      if (!userId || isAllowedUser(userId, '')) {
+        filteredTasks.push(task);
+      } else {
+        debugLog('AGENT', `Skipping task #${task.id} for unauthorized user: ${userId}`);
+        await markTaskCompleted(task.id, { skipped: true, reason: 'Unauthorized user' });
+      }
+    }
 
-    // 3. Xử lý tất cả tasks song song với Groq
-    await processTasksInParallel(tasks);
+    if (filteredTasks.length === 0) {
+      if (tasks.length > 0) {
+        debugLog('AGENT', `Skipped all ${tasks.length} tasks for unauthorized users`);
+      }
+      return;
+    }
+
+    debugLog('AGENT', `Processing ${filteredTasks.length} tasks in parallel`);
+
+    // 3. Xử lý các tasks hợp lệ song song với Groq
+    await processTasksInParallel(filteredTasks);
   } catch (error) {
     debugLog('AGENT', `Cycle error: ${error}`);
   }

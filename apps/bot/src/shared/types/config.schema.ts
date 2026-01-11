@@ -22,7 +22,73 @@ export const DEFAULT_RESPONSE: AIResponse = {
   undoIndexes: [],
 };
 
-const VALID_REACTIONS = new Set(['heart', 'haha', 'wow', 'sad', 'angry', 'like']);
+// Base Zalo reactions
+const ZALO_REACTIONS = new Set(['heart', 'haha', 'wow', 'sad', 'angry', 'like']);
+
+// Map emoji/text to base Zalo reaction
+// Khi AI dùng emoji, hệ thống sẽ tự động map sang reaction Zalo phù hợp nhất
+const EMOJI_TO_REACTION: Record<string, string> = {
+  // Heart variants -> heart
+  '❤️': 'heart', '❤': 'heart', '💖': 'heart', '💕': 'heart', '💗': 'heart',
+  '💓': 'heart', '💘': 'heart', '💝': 'heart', '💞': 'heart', '🥰': 'heart',
+  '😍': 'heart', '🤗': 'heart', '💔': 'heart',
+  
+  // Like/thumbs up variants -> like
+  '👍': 'like', '👍🏻': 'like', '👍🏼': 'like', '👍🏽': 'like', '👍🏾': 'like', '👍🏿': 'like',
+  '👏': 'like', '🙌': 'like', '🫡': 'like', '✨': 'like', '🎉': 'like', '🥳': 'like',
+  '🤩': 'like', '😎': 'like', '🔥': 'like', '💯': 'like',
+  
+  // Thumbs down -> like (Zalo no dislike, fallback to like with negative intent)
+  '👎': 'angry',
+  
+  // Haha/funny variants -> haha
+  '😂': 'haha', '🤣': 'haha', '😆': 'haha', '😁': 'haha', '😄': 'haha',
+  '🤭': 'haha', '😜': 'haha', '😝': 'haha', '🤪': 'haha', '🙃': 'haha',
+  '🤤': 'haha', '🥲': 'haha',
+  
+  // Wow/surprised variants -> wow
+  '😮': 'wow', '😯': 'wow', '😲': 'wow', '🤯': 'wow', '😱': 'wow',
+  '😳': 'wow', '🫣': 'wow', '🫠': 'wow', '🧐': 'wow', '🤓': 'wow',
+  '😦': 'wow', '😧': 'wow', '😨': 'wow',
+  
+  // Sad variants -> sad
+  '😢': 'sad', '😭': 'sad', '🥺': 'sad', '😿': 'sad', '💧': 'sad',
+  '😰': 'sad', '😥': 'sad', '😓': 'sad', '😞': 'sad', '😔': 'sad',
+  
+  // Angry variants -> angry
+  '😡': 'angry', '😠': 'angry', '🤬': 'angry', '💢': 'angry', '👿': 'angry',
+  '😤': 'angry', '🙄': 'angry',
+  
+  // Neutral/thinking -> like (no perfect match, default to positive)
+  '🤔': 'like', '🤨': 'like', '🥸': 'like', '🤡': 'like',
+  '😶': 'like', '😐': 'like', '😑': 'like', '😬': 'like',
+  '🤫': 'like', '🤥': 'like',
+};
+
+// Combined valid reactions: base Zalo reactions + emoji keys
+const VALID_REACTIONS = new Set([
+  ...ZALO_REACTIONS,
+  ...Object.keys(EMOJI_TO_REACTION),
+]);
+
+/**
+ * Normalize reaction: convert emoji/variant to base Zalo reaction
+ */
+function normalizeReaction(reaction: string): string | null {
+  const lower = reaction.toLowerCase();
+  
+  // Already a base Zalo reaction
+  if (ZALO_REACTIONS.has(lower)) {
+    return lower;
+  }
+  
+  // Check emoji mapping
+  if (EMOJI_TO_REACTION[reaction]) {
+    return EMOJI_TO_REACTION[reaction];
+  }
+  
+  return null;
+}
 
 import { debugLog } from '../../core/logger/logger.js';
 import { fixStuckTags } from '../utils/tagFixer.js';
@@ -44,19 +110,24 @@ export function parseAIResponse(text: string): AIResponse {
     // Parse [reaction:xxx] hoặc [reaction:INDEX:xxx] - hỗ trợ nhiều reaction
     // Format 1: [reaction:heart] - thả vào tin cuối
     // Format 2: [reaction:0:heart] - thả vào tin index 0 trong batch
-    const reactionMatches = fixedText.matchAll(/\[reaction:(\d+:)?(\w+)\]/gi);
+    // Regex mở rộng: hỗ trợ cả text reaction (heart, like...) và emoji (❤️, 👍...)
+    // Pattern: [reaction:emoji] hoặc [reaction:0:emoji]
+    const reactionMatches = fixedText.matchAll(/\[reaction:(\d+:)?([^\]]+)\]/gi);
     for (const match of reactionMatches) {
       const indexPart = match[1]; // "0:" hoặc undefined
-      const reactionType = match[2].toLowerCase();
+      const rawReaction = match[2].trim();
 
-      if (VALID_REACTIONS.has(reactionType) && reactionType !== 'none') {
+      // Normalize reaction (convert emoji to Zalo reaction)
+      const normalizedReaction = normalizeReaction(rawReaction);
+      
+      if (normalizedReaction && normalizedReaction !== 'none') {
         if (indexPart) {
           // Có index: "0:heart" -> lưu dạng "0:heart"
           const index = indexPart.replace(':', '');
-          result.reactions.push(`${index}:${reactionType}` as ReactionType);
+          result.reactions.push(`${index}:${normalizedReaction}` as ReactionType);
         } else {
           // Không có index: "heart" -> lưu bình thường
-          result.reactions.push(reactionType as ReactionType);
+          result.reactions.push(normalizedReaction as ReactionType);
         }
       }
     }
@@ -121,7 +192,7 @@ export function parseAIResponse(text: string): AIResponse {
 
     // Lấy text thuần (loại bỏ các tag và text ngay sau [/quote])
     const plainText = fixedText
-      .replace(/\[reaction:(\d+:)?\w+\]/gi, '') // Hỗ trợ cả [reaction:heart] và [reaction:0:heart]
+      .replace(/\[reaction:(\d+:)?[^\]]+\]/gi, '') // Hỗ trợ cả text và emoji reactions
       .replace(/\[sticker:\w+\]/gi, '')
       .replace(/\[quote:-?\d+\][\s\S]*?\[\/quote\]\s*[^[]*?(?=\[|$)/gi, '') // Bao gồm text sau [/quote]
       .replace(/\[msg\][\s\S]*?\[\/msg\]/gi, '')

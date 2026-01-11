@@ -1,7 +1,33 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { settingsApiClient, type BotSettings } from '@/lib/api';
+import {
+  settingsApiClient,
+  type BotSettings,
+  type RetryConfig,
+  type HistoryLoaderConfig,
+  type FetchConfig,
+  type StickersConfig,
+  type LoggerConfig,
+  type ReactionConfig,
+  type FriendRequestConfig,
+  type MessageChunkerConfig,
+  type MessageStoreConfig,
+  type JikanConfig,
+  type ElevenLabsConfig,
+  type GiphyConfig,
+  type NekosConfig,
+  type FreepikConfig,
+  type MessageSenderConfig,
+  type MarkdownConfig,
+  type TvuConfig,
+  type GroqConfig,
+  type DatabaseConfig,
+  type ResponseHandlerConfig,
+  type GroupMembersFetchConfig,
+  type GoogleTtsConfig,
+  type SandboxConfig
+} from '@/lib/api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +53,17 @@ import {
   Clock,
   Database,
   Users,
+  Volume2,
+  Image,
+  Globe,
+  MessageCircle,
+  Server,
+  Timer,
+  HardDrive,
+  Mic,
+  Palette,
+  Send,
+  Heart,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -184,6 +221,191 @@ export default function SettingsPage() {
     });
   };
 
+  const updateBlockedUserIds = (value: string) => {
+    if (!localSettings) return;
+    const ids = value.split('\n').map((id) => id.trim()).filter(Boolean);
+    setLocalSettings({
+      ...localSettings,
+      blockedUserIds: ids,
+    });
+  };
+
+  const updateElevenlabs = <K extends keyof ElevenLabsConfig>(key: K, value: ElevenLabsConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      elevenlabs: { ...localSettings.elevenlabs, [key]: value },
+    });
+  };
+
+  const updateGiphy = <K extends keyof GiphyConfig>(key: K, value: GiphyConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      giphy: { ...localSettings.giphy, [key]: value },
+    });
+  };
+
+  const updateJikan = <K extends keyof JikanConfig>(key: K, value: JikanConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      jikan: { ...localSettings.jikan, [key]: value },
+    });
+  };
+
+  const updateFreepik = <K extends keyof FreepikConfig>(key: K, value: FreepikConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      freepik: { ...localSettings.freepik, [key]: value },
+    });
+  };
+
+  const updateMessageStore = <K extends keyof MessageStoreConfig>(key: K, value: MessageStoreConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      messageStore: { ...localSettings.messageStore, [key]: value },
+    });
+  };
+
+  const updateResponseHandler = <K extends keyof ResponseHandlerConfig>(key: K, value: ResponseHandlerConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      responseHandler: { ...localSettings.responseHandler, [key]: value },
+    });
+  };
+
+  const updateDatabase = <K extends keyof DatabaseConfig>(key: K, value: DatabaseConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      database: { ...localSettings.database, [key]: value },
+    });
+  };
+
+  const updateStickers = (keywords: string[]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      stickers: { ...localSettings.stickers, keywords },
+    });
+  };
+
+  const updateRetry = <K extends keyof RetryConfig>(key: K, value: RetryConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      retry: { ...localSettings.retry, [key]: value },
+    });
+  };
+
+  const updateHistoryLoader = <K extends keyof HistoryLoaderConfig>(key: K, value: HistoryLoaderConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      historyLoader: { ...localSettings.historyLoader, [key]: value },
+    });
+  };
+
+  const updateFetch = <K extends keyof FetchConfig>(key: K, value: FetchConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      fetch: { ...localSettings.fetch, [key]: value },
+    });
+  };
+
+  const updateLogger = <K extends keyof LoggerConfig>(key: K, value: LoggerConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      logger: { ...localSettings.logger, [key]: value },
+    });
+  };
+
+  const updateReaction = <K extends keyof ReactionConfig>(key: K, value: ReactionConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      reaction: { ...localSettings.reaction, [key]: value },
+    });
+  };
+
+  const updateFriendRequest = <K extends keyof FriendRequestConfig>(key: K, value: FriendRequestConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      friendRequest: { ...localSettings.friendRequest, [key]: value },
+    });
+  };
+
+  const updateMessageChunker = <K extends keyof MessageChunkerConfig>(key: K, value: MessageChunkerConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      messageChunker: { ...localSettings.messageChunker, [key]: value },
+    });
+  };
+
+  const updateMessageSender = <K extends keyof MessageSenderConfig>(key: K, value: MessageSenderConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      messageSender: { ...localSettings.messageSender, [key]: value },
+    });
+  };
+
+  const updateMarkdown = <K extends keyof MarkdownConfig>(key: K, value: MarkdownConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      markdown: { ...localSettings.markdown, [key]: value },
+    });
+  };
+
+  const updateTvu = <K extends keyof TvuConfig>(key: K, value: TvuConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      tvu: { ...localSettings.tvu, [key]: value },
+    });
+  };
+
+  const updateGroq = <K extends keyof GroqConfig>(key: K, value: GroqConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      groq: { ...localSettings.groq, [key]: value },
+    });
+  };
+
+  const updateSandbox = <K extends keyof SandboxConfig>(key: K, value: SandboxConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      sandbox: { ...localSettings.sandbox, [key]: value },
+    });
+  };
+
+  const updateGroupMembersFetch = <K extends keyof GroupMembersFetchConfig>(key: K, value: GroupMembersFetchConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      groupMembersFetch: { ...localSettings.groupMembersFetch, [key]: value },
+    });
+  };
+
+  const updateGoogleTts = <K extends keyof GoogleTtsConfig>(key: K, value: GoogleTtsConfig[K]) => {
+    if (!localSettings) return;
+    setLocalSettings({
+      ...localSettings,
+      googleTts: { ...localSettings.googleTts, [key]: value },
+    });
+  };
+
   if (isLoading || !localSettings) {
     return (
       <div className="space-y-8 max-w-5xl mx-auto">
@@ -248,6 +470,10 @@ export default function SettingsPage() {
           <TabsTrigger value="modules" className="h-10 px-4 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
             <Puzzle className="h-4 w-4 mr-2" />
             Mô-đun
+          </TabsTrigger>
+          <TabsTrigger value="integrations" className="h-10 px-4 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            <Globe className="h-4 w-4 mr-2" />
+            Tích hợp
           </TabsTrigger>
           <TabsTrigger value="performance" className="h-10 px-4 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
             <Zap className="h-4 w-4 mr-2" />
@@ -589,6 +815,16 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Rate Limit Cooldown (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.groq?.rateLimitCooldownMs ?? 60000}
+                  onChange={(e) => updateGroq('rateLimitCooldownMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
             </div>
           </div>
 
@@ -599,15 +835,15 @@ export default function SettingsPage() {
                 <Clock className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold">Background Agent</h3>
-                <p className="text-sm text-muted-foreground">Cấu hình agent chạy nền</p>
+                <h3 className="text-lg font-bold">Tác vụ Ngầm (Background)</h3>
+                <p className="text-sm text-muted-foreground">Tự động xử lý dữ liệu khi rảnh rỗi</p>
               </div>
             </div>
 
             <div className="space-y-6">
               <SettingToggle
-                label="Bật Groq"
-                description="Sử dụng Groq cho background agent"
+                label="Dùng Groq siêu tốc"
+                description="Xử lý cực nhanh, giảm tải cho bot chính"
                 checked={localSettings.backgroundAgent?.groqEnabled ?? true}
                 onCheckedChange={(v) => updateBackgroundAgent('groqEnabled', v)}
                 icon={Zap}
@@ -678,6 +914,341 @@ export default function SettingsPage() {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Integrations Tab */}
+        <TabsContent value="integrations" className="space-y-6">
+          {/* Google TTS Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1CB0F6] text-white shadow-[0_3px_0_0_#1899D6]">
+                <Volume2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Google TTS</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình Google Text-to-Speech miễn phí</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Ngôn ngữ mặc định</Label>
+                <Input
+                  value={localSettings.googleTts?.defaultLanguage ?? 'vi'}
+                  onChange={(e) => updateGoogleTts('defaultLanguage', e.target.value)}
+                  className="h-11 rounded-xl border-2 font-mono text-sm"
+                  placeholder="vi"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Tốc độ nói: {localSettings.googleTts?.defaultSpeakingRate ?? 1}</Label>
+                <Slider
+                  value={[localSettings.googleTts?.defaultSpeakingRate ?? 1]}
+                  onValueChange={([v]) => updateGoogleTts('defaultSpeakingRate', v)}
+                  min={0.25}
+                  max={4.0}
+                  step={0.25}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Âm lượng (dB): {localSettings.googleTts?.defaultVolumeGainDb ?? 0}</Label>
+                <Slider
+                  value={[localSettings.googleTts?.defaultVolumeGainDb ?? 0]}
+                  onValueChange={([v]) => updateGoogleTts('defaultVolumeGainDb', v)}
+                  min={-10}
+                  max={10}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ElevenLabs Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#CE82FF] text-white shadow-[0_3px_0_0_#B86EE6]">
+                <Mic className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">ElevenLabs</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình Text-to-Speech</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Voice ID mặc định</Label>
+                  <Input
+                    value={localSettings.elevenlabs?.defaultVoiceId ?? ''}
+                    onChange={(e) => updateElevenlabs('defaultVoiceId', e.target.value)}
+                    className="h-11 rounded-xl border-2 font-mono text-sm"
+                    placeholder="fUjY9K2nAIwlALOwSiwc"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Model ID</Label>
+                  <Input
+                    value={localSettings.elevenlabs?.defaultModelId ?? ''}
+                    onChange={(e) => updateElevenlabs('defaultModelId', e.target.value)}
+                    className="h-11 rounded-xl border-2 font-mono text-sm"
+                    placeholder="eleven_v3"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Stability: {localSettings.elevenlabs?.defaultStability ?? 0.5}</Label>
+                  <Slider
+                    value={[localSettings.elevenlabs?.defaultStability ?? 0.5]}
+                    onValueChange={([v]) => updateElevenlabs('defaultStability', v)}
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Similarity Boost: {localSettings.elevenlabs?.defaultSimilarityBoost ?? 0.75}</Label>
+                  <Slider
+                    value={[localSettings.elevenlabs?.defaultSimilarityBoost ?? 0.75]}
+                    onValueChange={([v]) => updateElevenlabs('defaultSimilarityBoost', v)}
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Style: {localSettings.elevenlabs?.defaultStyle ?? 0.5}</Label>
+                  <Slider
+                    value={[localSettings.elevenlabs?.defaultStyle ?? 0.5]}
+                    onValueChange={([v]) => updateElevenlabs('defaultStyle', v)}
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Giphy Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#FF9600] text-white shadow-[0_3px_0_0_#E68600]">
+                <Image className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Giphy</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình tìm kiếm GIF</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Timeout (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.giphy?.timeoutMs ?? 15000}
+                  onChange={(e) => updateGiphy('timeoutMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Default Limit</Label>
+                <Input
+                  type="number"
+                  value={localSettings.giphy?.defaultLimit ?? 10}
+                  onChange={(e) => updateGiphy('defaultLimit', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Rating</Label>
+                <Input
+                  value={localSettings.giphy?.defaultRating ?? 'g'}
+                  onChange={(e) => updateGiphy('defaultRating', e.target.value)}
+                  className="h-11 rounded-xl border-2"
+                  placeholder="g, pg, pg-13, r"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Retry Limit</Label>
+                <Input
+                  type="number"
+                  value={localSettings.giphy?.retryLimit ?? 2}
+                  onChange={(e) => updateGiphy('retryLimit', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Jikan Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1CB0F6] text-white shadow-[0_3px_0_0_#1899D6]">
+                <Heart className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Jikan (MyAnimeList)</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình API Anime/Manga</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Rate Limit Delay (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.jikan?.rateLimitDelayMs ?? 350}
+                  onChange={(e) => updateJikan('rateLimitDelayMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Timeout (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.jikan?.timeoutMs ?? 15000}
+                  onChange={(e) => updateJikan('timeoutMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Retry Limit</Label>
+                <Input
+                  type="number"
+                  value={localSettings.jikan?.retryLimit ?? 3}
+                  onChange={(e) => updateJikan('retryLimit', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Backoff Limit (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.jikan?.backoffLimitMs ?? 3000}
+                  onChange={(e) => updateJikan('backoffLimitMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Freepik Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#58CC02] text-white shadow-[0_3px_0_0_#46A302]">
+                <Palette className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Freepik</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình tạo ảnh AI</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Timeout (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.freepik?.timeoutMs ?? 60000}
+                  onChange={(e) => updateFreepik('timeoutMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Max Poll Attempts</Label>
+                <Input
+                  type="number"
+                  value={localSettings.freepik?.pollMaxAttempts ?? 30}
+                  onChange={(e) => updateFreepik('pollMaxAttempts', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Poll Interval (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.freepik?.pollIntervalMs ?? 2000}
+                  onChange={(e) => updateFreepik('pollIntervalMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Retry Limit</Label>
+                <Input
+                  type="number"
+                  value={localSettings.freepik?.retryLimit ?? 2}
+                  onChange={(e) => updateFreepik('retryLimit', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* TVU Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1CB0F6] text-white shadow-[0_3px_0_0_#1899D6]">
+                <Globe className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">TVU Service</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình dịch vụ TikVideoUrl</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Timeout (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.tvu?.timeoutMs ?? 10000}
+                  onChange={(e) => updateTvu('timeoutMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Retry Limit</Label>
+                <Input
+                  type="number"
+                  value={localSettings.tvu?.retryLimit ?? 2}
+                  onChange={(e) => updateTvu('retryLimit', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Stickers Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#FF4B4B] text-white shadow-[0_3px_0_0_#E63E3E]">
+                <MessageCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Stickers</h3>
+                <p className="text-sm text-muted-foreground">Từ khóa cho sticker (mỗi dòng 1 từ khóa)</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Textarea
+                value={(localSettings.stickers?.keywords ?? []).join('\n')}
+                onChange={(e) => updateStickers(e.target.value.split('\n').filter(Boolean))}
+                placeholder="hello&#10;hi&#10;love&#10;haha..."
+                rows={4}
+                className="rounded-xl border-2 resize-none font-mono text-sm"
+              />
             </div>
           </div>
         </TabsContent>
@@ -861,6 +1432,330 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+
+          {/* Message Store Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1CB0F6] text-white shadow-[0_3px_0_0_#1899D6]">
+                <MessageCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Message Store</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình lưu trữ tin nhắn</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Max Cache/Thread</Label>
+                <Input
+                  type="number"
+                  value={localSettings.messageStore?.maxCachePerThread ?? 20}
+                  onChange={(e) => updateMessageStore('maxCachePerThread', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Cleanup Interval (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.messageStore?.cleanupIntervalMs ?? 1800000}
+                  onChange={(e) => updateMessageStore('cleanupIntervalMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Recent Window (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.messageStore?.recentMessageWindowMs ?? 300000}
+                  onChange={(e) => updateMessageStore('recentMessageWindowMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Max Undo Time (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.messageStore?.maxUndoTimeMs ?? 120000}
+                  onChange={(e) => updateMessageStore('maxUndoTimeMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Response Handler Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#FF9600] text-white shadow-[0_3px_0_0_#E68600]">
+                <Send className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Response Handler</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình độ trễ phản hồi</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Reaction Delay (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.responseHandler?.reactionDelayMs ?? 300}
+                  onChange={(e) => updateResponseHandler('reactionDelayMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Chunk Delay (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.responseHandler?.chunkDelayMs ?? 300}
+                  onChange={(e) => updateResponseHandler('chunkDelayMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Sticker Delay (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.responseHandler?.stickerDelayMs ?? 800}
+                  onChange={(e) => updateResponseHandler('stickerDelayMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Card Delay (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.responseHandler?.cardDelayMs ?? 500}
+                  onChange={(e) => updateResponseHandler('cardDelayMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3 mt-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Message Delay Min (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.responseHandler?.messageDelayMinMs ?? 500}
+                  onChange={(e) => updateResponseHandler('messageDelayMinMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Message Delay Max (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.responseHandler?.messageDelayMaxMs ?? 1000}
+                  onChange={(e) => updateResponseHandler('messageDelayMaxMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Image Delay (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.responseHandler?.imageDelayMs ?? 500}
+                  onChange={(e) => updateResponseHandler('imageDelayMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Database Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#58CC02] text-white shadow-[0_3px_0_0_#46A302]">
+                <HardDrive className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Database</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình cơ sở dữ liệu</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Path</Label>
+                <Input
+                  value={localSettings.database?.path ?? 'data/bot.db'}
+                  onChange={(e) => updateDatabase('path', e.target.value)}
+                  className="h-11 rounded-xl border-2 font-mono text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Cleanup Interval (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.database?.cleanupIntervalMs ?? 3600000}
+                  onChange={(e) => updateDatabase('cleanupIntervalMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Embedding Dim</Label>
+                <Input
+                  type="number"
+                  value={localSettings.database?.embeddingDim ?? 768}
+                  onChange={(e) => updateDatabase('embeddingDim', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Cache Size</Label>
+                <Input
+                  type="number"
+                  value={localSettings.database?.cacheSize ?? 10000}
+                  onChange={(e) => updateDatabase('cacheSize', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* History Loader Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#58CC02] text-white shadow-[0_3px_0_0_#46A302]">
+                <Database className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">History Loader</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình tải lịch sử</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex flex-wrap gap-4">
+                <SettingToggle
+                  label="Bật History Loader"
+                  description="Cho phép tải lịch sử"
+                  checked={localSettings.historyLoader?.enabled ?? false}
+                  onCheckedChange={(v) => updateHistoryLoader('enabled', v)}
+                  icon={Database}
+                  color="#58CC02"
+                />
+                <SettingToggle
+                  label="Load từ DB"
+                  description="Tải từ cơ sở dữ liệu"
+                  checked={localSettings.historyLoader?.loadFromDb ?? true}
+                  onCheckedChange={(v) => updateHistoryLoader('loadFromDb', v)}
+                  icon={HardDrive}
+                  color="#1CB0F6"
+                />
+                <SettingToggle
+                  label="Load User"
+                  description="Tải lịch sử user"
+                  checked={localSettings.historyLoader?.loadUser ?? true}
+                  onCheckedChange={(v) => updateHistoryLoader('loadUser', v)}
+                  icon={Users}
+                  color="#CE82FF"
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Max Delay (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.historyLoader?.maxDelayMs ?? 5000}
+                    onChange={(e) => updateHistoryLoader('maxDelayMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Min Delay (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.historyLoader?.minDelayMs ?? 2000}
+                    onChange={(e) => updateHistoryLoader('minDelayMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Default Limit</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.historyLoader?.defaultLimit ?? 1000}
+                    onChange={(e) => updateHistoryLoader('defaultLimit', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Page Timeout (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.historyLoader?.pageTimeoutMs ?? 10000}
+                    onChange={(e) => updateHistoryLoader('pageTimeoutMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Message Chunker & Group Fetch */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border-2 border-border bg-card p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1CB0F6] text-white shadow-[0_3px_0_0_#1899D6]">
+                  <MessageSquare className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Message Chunker</h3>
+                  <p className="text-sm text-muted-foreground">Cấu hình chia nhỏ tin nhắn</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Max Message Length</Label>
+                <Input
+                  type="number"
+                  value={localSettings.messageChunker?.maxMessageLength ?? 1800}
+                  onChange={(e) => updateMessageChunker('maxMessageLength', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border-2 border-border bg-card p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#CE82FF] text-white shadow-[0_3px_0_0_#B86EE6]">
+                  <Users className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Group Members Fetch</h3>
+                  <p className="text-sm text-muted-foreground">Cấu hình tải thành viên nhóm</p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Delay Min (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.groupMembersFetch?.delayMinMs ?? 300}
+                    onChange={(e) => updateGroupMembersFetch('delayMinMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Delay Max (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.groupMembersFetch?.delayMaxMs ?? 800}
+                    onChange={(e) => updateGroupMembersFetch('delayMaxMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
 
@@ -878,6 +1773,62 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-4 rounded-xl border-2 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Send className="h-4 w-4 text-[#1CB0F6]" />
+                    <h4 className="font-bold">Message Sender</h4>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Media Delay (ms)</Label>
+                      <Input
+                        type="number"
+                        value={localSettings.messageSender?.mediaDelayMs ?? 300}
+                        onChange={(e) => updateMessageSender('mediaDelayMs', Number(e.target.value))}
+                        className="h-11 rounded-xl border-2"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Chunk Delay (ms)</Label>
+                      <Input
+                        type="number"
+                        value={localSettings.messageSender?.chunkDelayMs ?? 400}
+                        onChange={(e) => updateMessageSender('chunkDelayMs', Number(e.target.value))}
+                        className="h-11 rounded-xl border-2"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 rounded-xl border-2 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Palette className="h-4 w-4 text-[#CE82FF]" />
+                    <h4 className="font-bold">Markdown Renderer</h4>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Mermaid Timeout</Label>
+                      <Input
+                        type="number"
+                        value={localSettings.markdown?.mermaidTimeoutMs ?? 30000}
+                        onChange={(e) => updateMarkdown('mermaidTimeoutMs', Number(e.target.value))}
+                        className="h-11 rounded-xl border-2"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Media Size Limit (MB)</Label>
+                      <Input
+                        type="number"
+                        value={localSettings.markdown?.groupMediaSizeLimitMB ?? 1}
+                        onChange={(e) => updateMarkdown('groupMediaSizeLimitMB', Number(e.target.value))}
+                        className="h-11 rounded-xl border-2"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">Độ sâu công cụ tối đa</Label>
@@ -957,6 +1908,211 @@ export default function SettingsPage() {
                 rows={4}
                 className="rounded-xl border-2 resize-none font-mono text-sm"
               />
+            </div>
+          </div>
+
+          {/* Blocked User IDs */}
+          <div className="rounded-2xl border-2 border-[#FF4B4B]/30 bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#FF4B4B] text-white shadow-[0_3px_0_0_#E63E3E]">
+                <Shield className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Blocked User IDs (Blacklist)</h3>
+                <p className="text-sm text-muted-foreground">Danh sách user ID bị chặn hoàn toàn khỏi bot</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">User IDs (mỗi dòng 1 ID)</Label>
+              <Textarea
+                value={(localSettings.blockedUserIds ?? []).join('\n')}
+                onChange={(e) => updateBlockedUserIds(e.target.value)}
+                placeholder="Nhập các ID cần chặn..."
+                rows={4}
+                className="rounded-xl border-2 resize-none font-mono text-sm border-[#FF4B4B]/20"
+              />
+            </div>
+          </div>
+
+          {/* Retry & Fetch Settings */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border-2 border-border bg-card p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#FF9600] text-white shadow-[0_3px_0_0_#E68600]">
+                  <RefreshCw className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Retry Settings</h3>
+                  <p className="text-sm text-muted-foreground">Cấu hình thử lại</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Max Retries</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.retry?.maxRetries ?? 10}
+                    onChange={(e) => updateRetry('maxRetries', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Base Delay (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.retry?.baseDelayMs ?? 1000}
+                    onChange={(e) => updateRetry('baseDelayMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border-2 border-border bg-card p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1CB0F6] text-white shadow-[0_3px_0_0_#1899D6]">
+                  <Globe className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Fetch Settings</h3>
+                  <p className="text-sm text-muted-foreground">Cấu hình request</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Timeout (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.fetch?.timeoutMs ?? 60000}
+                    onChange={(e) => updateFetch('timeoutMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Max Local Retries</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.fetch?.maxRetries ?? 3}
+                    onChange={(e) => updateFetch('maxRetries', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Logger & Sandbox Settings */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border-2 border-border bg-card p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#777777] text-white shadow-[0_3px_0_0_#5A5A5A]">
+                  <Settings className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Logger Settings</h3>
+                  <p className="text-sm text-muted-foreground">Cấu hình nhật ký</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Max Lines/File</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.logger?.maxLinesPerFile ?? 1000}
+                    onChange={(e) => updateLogger('maxLinesPerFile', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Cache Threshold</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.logger?.logCacheThreshold ?? 1000}
+                    onChange={(e) => updateLogger('logCacheThreshold', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border-2 border-border bg-card p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#FF4B4B] text-white shadow-[0_3px_0_0_#E63E3E]">
+                  <Shield className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Sandbox</h3>
+                  <p className="text-sm text-muted-foreground">Cấu hình môi trường an toàn</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Install Timeout (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.sandbox?.installTimeoutMs ?? 60000}
+                    onChange={(e) => updateSandbox('installTimeoutMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Execute Timeout (ms)</Label>
+                  <Input
+                    type="number"
+                    value={localSettings.sandbox?.executeTimeoutMs ?? 30000}
+                    onChange={(e) => updateSandbox('executeTimeoutMs', Number(e.target.value))}
+                    className="h-11 rounded-xl border-2"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Social Settings */}
+          <div className="rounded-2xl border-2 border-border bg-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#CE82FF] text-white shadow-[0_3px_0_0_#B86EE6]">
+                <Heart className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Social Settings</h3>
+                <p className="text-sm text-muted-foreground">Cấu hình tương tác xã hội</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Reaction Debounce (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.reaction?.debounceMs ?? 2000}
+                  onChange={(e) => updateReaction('debounceMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Friend Auto-Accept Min (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.friendRequest?.autoAcceptDelayMinMs ?? 2000}
+                  onChange={(e) => updateFriendRequest('autoAcceptDelayMinMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Friend Auto-Accept Max (ms)</Label>
+                <Input
+                  type="number"
+                  value={localSettings.friendRequest?.autoAcceptDelayMaxMs ?? 5000}
+                  onChange={(e) => updateFriendRequest('autoAcceptDelayMaxMs', Number(e.target.value))}
+                  className="h-11 rounded-xl border-2"
+                />
+              </div>
             </div>
           </div>
         </TabsContent>
