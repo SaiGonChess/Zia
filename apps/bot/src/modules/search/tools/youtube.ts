@@ -21,7 +21,7 @@ import {
 
 export const youtubeSearchTool: ToolDefinition = {
   name: 'youtubeSearch',
-  description: 'Tìm kiếm video, channel hoặc playlist trên YouTube.',
+  description: 'Tìm kiếm video, channel hoặc playlist trên YouTube. Dùng order=date và publishedAfter để lấy VIDEO MỚI NHẤT!',
   parameters: [
     { name: 'q', type: 'string', description: 'Từ khóa tìm kiếm', required: true },
     {
@@ -34,7 +34,13 @@ export const youtubeSearchTool: ToolDefinition = {
     {
       name: 'order',
       type: 'string',
-      description: 'Sắp xếp: relevance, date, viewCount',
+      description: 'Sắp xếp: date (mới nhất), relevance (liên quan), viewCount (lượt xem). KHUYẾN NGHỊ: Dùng date khi tìm video mới!',
+      required: false,
+    },
+    {
+      name: 'publishedAfter',
+      type: 'string',
+      description: 'Chỉ lấy video đăng sau ngày này (ISO 8601, VD: "2024-01-01T00:00:00Z"). KHUYẾN NGHỊ: Dùng khi cần video mới!',
       required: false,
     },
   ],
@@ -49,6 +55,8 @@ export const youtubeSearchTool: ToolDefinition = {
         type: data.type,
         maxResults: data.maxResults,
         order: data.order,
+        publishedAfter: data.publishedAfter,
+        publishedBefore: data.publishedBefore,
       });
       const items = result.items.map((item) => ({
         type: item.id.kind.replace('youtube#', ''),
@@ -64,7 +72,7 @@ export const youtubeSearchTool: ToolDefinition = {
             ? `https://youtube.com/channel/${item.id.channelId}`
             : `https://youtube.com/playlist?list=${item.id.playlistId}`,
       }));
-      debugLog('YOUTUBE', `Found ${items.length} results for "${data.q}"`);
+      debugLog('YOUTUBE', `Found ${items.length} results for "${data.q}" (order: ${data.order || 'relevance'}, publishedAfter: ${data.publishedAfter || 'none'})`);
       return {
         success: true,
         data: {
@@ -72,6 +80,10 @@ export const youtubeSearchTool: ToolDefinition = {
           totalResults: result.pageInfo.totalResults,
           items,
           nextPageToken: result.nextPageToken,
+          filters: {
+            order: data.order,
+            publishedAfter: data.publishedAfter,
+          },
         },
       };
     } catch (error: any) {

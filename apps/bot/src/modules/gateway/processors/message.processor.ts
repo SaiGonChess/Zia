@@ -310,20 +310,32 @@ async function processStreamingResponse(
     await saveResponseToHistory(threadId, result);
     await saveToolResultToHistory(threadId, toolResult.promptForAI);
 
-    const updatedHistory = getHistory(threadId);
-    await processAIResponse(
-      api,
-      threadId,
-      lastMsg,
-      messages,
-      toolResult.promptForAI,
-      undefined,
-      updatedHistory,
-      senderId,
-      senderName,
-      signal,
-      depth + 1,
-    );
+    // Check if ALL tools are "silent" tools - không cần AI phản hồi lại
+    // Silent tools: saveMemory, recallMemory (đã có response từ AI trước khi gọi tool)
+    const SILENT_TOOLS = ['saveMemory', 'recallMemory'];
+    const allToolsSilent = toolResult.toolCalls.every(t => SILENT_TOOLS.includes(t.toolName));
+    
+    if (allToolsSilent) {
+      // Không gọi AI lần nữa - AI đã trả lời trước khi gọi tool rồi
+      debugLog('MIXED', `All tools are silent (${toolResult.toolCalls.map(t => t.toolName).join(', ')}), skipping second AI call`);
+      console.log(`[Bot] ✅ Đã trả lời (streaming) + silent tools!`);
+    } else {
+      // Tools khác cần AI xử lý kết quả
+      const updatedHistory = getHistory(threadId);
+      await processAIResponse(
+        api,
+        threadId,
+        lastMsg,
+        messages,
+        toolResult.promptForAI,
+        undefined,
+        updatedHistory,
+        senderId,
+        senderName,
+        signal,
+        depth + 1,
+      );
+    }
   } else {
     await saveResponseToHistory(threadId, result);
     console.log(`[Bot] ✅ Đã trả lời (streaming)!`);
@@ -403,20 +415,29 @@ async function processNonStreamingResponse(
     await saveResponseToHistory(threadId, responseText);
     await saveToolResultToHistory(threadId, toolResult.promptForAI);
 
-    const updatedHistory = getHistory(threadId);
-    await processAIResponse(
-      api,
-      threadId,
-      lastMsg,
-      messages,
-      toolResult.promptForAI,
-      undefined,
-      updatedHistory,
-      senderId,
-      senderName,
-      signal,
-      depth + 1,
-    );
+    // Check if ALL tools are "silent" tools - không cần AI phản hồi lại
+    const SILENT_TOOLS = ['saveMemory', 'recallMemory'];
+    const allToolsSilent = toolResult.toolCalls.every(t => SILENT_TOOLS.includes(t.toolName));
+    
+    if (allToolsSilent) {
+      debugLog('MIXED', `All tools are silent, skipping second AI call (non-streaming)`);
+      console.log(`[Bot] ✅ Đã trả lời + silent tools!`);
+    } else {
+      const updatedHistory = getHistory(threadId);
+      await processAIResponse(
+        api,
+        threadId,
+        lastMsg,
+        messages,
+        toolResult.promptForAI,
+        undefined,
+        updatedHistory,
+        senderId,
+        senderName,
+        signal,
+        depth + 1,
+      );
+    }
   } else {
     await sendResponse(api, aiReply, threadId, lastMsg, messages);
     await saveResponseToHistory(threadId, responseText);

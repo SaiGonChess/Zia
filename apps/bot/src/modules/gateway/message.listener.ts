@@ -40,11 +40,32 @@ export interface MessageListenerOptions {
 /**
  * Tạo message handler cho Zalo API
  */
+// Message ID cache để tránh xử lý trùng (giữ 1000 message gần nhất)
+const processedMsgIds = new Set<string>();
+const MAX_PROCESSED_CACHE = 1000;
+
+function addProcessedMsgId(msgId: string) {
+  if (processedMsgIds.size >= MAX_PROCESSED_CACHE) {
+    // Xóa phần tử đầu tiên (cũ nhất)
+    const firstId = processedMsgIds.values().next().value;
+    if (firstId) processedMsgIds.delete(firstId);
+  }
+  processedMsgIds.add(msgId);
+}
+
 export function createMessageHandler(api: any, options: MessageListenerOptions) {
   const { isCloudMessage, processCloudMessage, shouldSkipMessage } = options;
 
   return async (message: any) => {
     const threadId = message.threadId;
+    const msgId = message.data?.msgId;
+
+    // Deduplicate: Bỏ qua tin nhắn đã xử lý
+    if (msgId && processedMsgIds.has(msgId)) {
+      debugLog('MSG', `Duplicate message ignored: msgId=${msgId}`);
+      return;
+    }
+    if (msgId) addProcessedMsgId(msgId);
 
     // Log RAW message
     if (CONFIG.fileLogging) {
@@ -188,6 +209,9 @@ const pendingReactions = new Map<
  */
 function registerReactionListener(api: any): void {
   api.listener.on('reaction', async (reactionObj: any) => {
+    // Console.log trực tiếp để debug (không phụ thuộc log level)
+    console.log('[Bot] 💝 REACTION EVENT RECEIVED:', JSON.stringify(reactionObj, null, 2));
+    
     // Log toàn bộ reaction object để debug
     debugLog('REACTION', `RAW event: ${JSON.stringify(reactionObj)}`);
 
@@ -211,17 +235,23 @@ function registerReactionListener(api: any): void {
     const rMsgCliId = data?.content?.rMsg?.[0]?.cMsgID; // Client msg ID từ rMsg
 
     if (!reactorId || !icon) {
+      console.log('[Bot] ❌ REACTION: Missing reactorId or icon');
       debugLog('REACTION', 'Missing reactorId or icon in reaction event');
       return;
     }
+
+    console.log(`[Bot] 💝 REACTION: reactorId=${reactorId}, icon=${icon}`);
 
     // Kiểm tra user được phép (để lưu context/trả lời)
     // Lấy tên reactor từ data nếu có
     const reactorName = data?.dName || '';
     if (!isAllowedUser(reactorId, reactorName)) {
+      console.log(`[Bot] ❌ REACTION: User not allowed: ${reactorName} (${reactorId})`);
       debugLog('REACTION', `Ignoring reaction from unauthorized user: ${reactorName} (${reactorId})`);
       return;
     }
+
+    console.log('[Bot] ✅ REACTION: User is allowed, finding bot message...');
 
     // Log tất cả các loại msgId để debug
     debugLog(
@@ -235,27 +265,41 @@ function registerReactionListener(api: any): void {
       .filter((id) => id != null)
       .map((id) => String(id));
 
-    let botMsg = null;
-    let matchedId = null;
+    console.log(`[Bot] 🔍 REACTION: Searching with IDs: ${possibleIds.join(', ')}`);
 
-    for (const id of possibleIds) {
-      botMsg = await getBotMessageByMsgId(id);
-      if (botMsg) {
-        matchedId = id;
-        debugLog('REACTION', `Found bot message with ID: ${id}`);
-        break;
+    let botMsg = null;
+
+    // Tối ưu: Query song song tất cả các ID cùng lúc thay vì tuần tự
+    // Sử dụng Promise.allSettled để không bị block bởi lỗi
+    if (possibleIds.length > 0) {
+      const results = await Promise.allSettled(
+        possibleIds.map((id) => getBotMessageByMsgId(id))
+      );
+      
+      // Lấy kết quả đầu tiên tìm được (theo thứ tự ưu tiên của possibleIds)
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        if (result.status === 'fulfilled' && result.value) {
+          botMsg = result.value;
+          console.log(`[Bot] ✅ REACTION: Found bot message with ID: ${possibleIds[i]}`);
+          debugLog('REACTION', `Found bot message with ID: ${possibleIds[i]}`);
+          break;
+        }
       }
     }
 
     // Nếu không tìm thấy theo ID, thử tìm tin nhắn gần nhất của bot trong thread
     if (!botMsg) {
+      console.log('[Bot] 🔍 REACTION: Not found by ID, trying last bot message in thread...');
       botMsg = await getLastBotMessageInThread(threadId);
       if (botMsg) {
+        console.log(`[Bot] ✅ REACTION: Found recent bot message: ${botMsg.msgId}`);
         debugLog('REACTION', `Found recent bot message in thread: ${botMsg.msgId}`);
       }
     }
 
     if (!botMsg) {
+      console.log(`[Bot] ❌ REACTION: No bot message found (tried IDs: ${possibleIds.join(', ')})`);
       debugLog('REACTION', `Not a bot message (tried IDs: ${possibleIds.join(', ')}), ignoring`);
       return;
     }

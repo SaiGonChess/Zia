@@ -70,6 +70,11 @@ export interface SearchParams {
   safe?: 'off' | 'active';
   lr?: string;
   gl?: string;
+  /** Giới hạn kết quả theo thời gian: d[số] = ngày, w[số] = tuần, m[số] = tháng, y[số] = năm
+   * VD: "d1" = 24h qua, "w1" = tuần qua, "m1" = tháng qua */
+  dateRestrict?: string;
+  /** Sắp xếp kết quả: 'date' = mới nhất trước */
+  sort?: 'date' | 'relevance';
 }
 
 /**
@@ -100,6 +105,10 @@ export async function googleSearch(params: SearchParams): Promise<{
   if (params.safe) searchParams.safe = params.safe;
   if (params.lr) searchParams.lr = params.lr;
   if (params.gl) searchParams.gl = params.gl;
+  // Thêm dateRestrict để lọc theo thời gian
+  if (params.dateRestrict) searchParams.dateRestrict = params.dateRestrict;
+  // Sắp xếp theo ngày nếu có
+  if (params.sort === 'date') searchParams.sort = 'date';
 
   debugLog('GOOGLE_SEARCH', `Searching: ${params.q}`);
 

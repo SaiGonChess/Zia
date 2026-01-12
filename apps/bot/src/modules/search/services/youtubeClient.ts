@@ -122,6 +122,10 @@ export interface SearchParams {
   regionCode?: string;
   videoDuration?: 'any' | 'short' | 'medium' | 'long';
   pageToken?: string;
+  /** Lọc video đăng sau ngày này (ISO 8601 format, VD: "2024-01-01T00:00:00Z") */
+  publishedAfter?: string;
+  /** Lọc video đăng trước ngày này (ISO 8601 format) */
+  publishedBefore?: string;
 }
 
 export interface VideoDetailsParams {
@@ -152,6 +156,9 @@ export async function searchYouTube(params: SearchParams): Promise<YouTubeSearch
   if (params.regionCode) searchParams.regionCode = params.regionCode;
   if (params.videoDuration) searchParams.videoDuration = params.videoDuration;
   if (params.pageToken) searchParams.pageToken = params.pageToken;
+  // Thêm publishedAfter/Before để lọc theo ngày đăng
+  if (params.publishedAfter) searchParams.publishedAfter = params.publishedAfter;
+  if (params.publishedBefore) searchParams.publishedBefore = params.publishedBefore;
 
   debugLog('YOUTUBE', `Searching: ${params.q} (type: ${params.type || 'video'})`);
 

@@ -87,6 +87,9 @@ export function setupSelfMessageListener(api: any) {
     const msgId = message.data?.msgId ? String(message.data.msgId) : null;
     const cliMsgId = message.data?.cliMsgId ? String(message.data.cliMsgId) : '';
 
+    // Log để debug
+    console.log(`[Bot] 💾 SELF_MESSAGE: msgId=${msgId}, threadId=${threadId}`);
+
     // Chỉ cần msgId là đủ để lưu (cliMsgId có thể rỗng)
     if (!msgId) return;
 

@@ -81,6 +81,9 @@ export function stopTyping(threadId: string) {
   debugLog('BUFFER', `Stopped typing for ${threadId}`);
 }
 
+// Processing lock để tránh race condition
+const processingLocks = new Set<string>();
+
 /**
  * Xử lý batch tin nhắn đã gom
  */
@@ -91,63 +94,77 @@ async function processBatch(batch: BufferedMessage[]) {
   const api = batch[0].api;
   let messages = batch.map((b) => b.message);
 
-  // Check maintenance mode - trả lời thông báo bảo trì và return
-  if (CONFIG.maintenanceMode?.enabled) {
-    const maintenanceMessage = CONFIG.maintenanceMode.message || '🔧 Bot đang trong chế độ bảo trì. Vui lòng thử lại sau!';
-    debugLog('BUFFER', `Maintenance mode enabled, sending maintenance message to ${threadId}`);
-    try {
-      const threadType = getThreadType(threadId);
-      await api.sendMessage(maintenanceMessage, threadId, threadType);
-      console.log(`[Bot] 🔧 Maintenance mode: Đã gửi thông báo bảo trì đến ${threadId}`);
-    } catch (e: any) {
-      logError('processBatch:maintenance', e);
-    }
+  // Check processing lock - tránh xử lý song song cùng thread
+  if (processingLocks.has(threadId)) {
+    debugLog('BUFFER', `Thread ${threadId} is already processing, queuing messages`);
+    // Lưu messages này để gom vào batch sau
+    saveAbortedMessages(threadId, messages);
     return;
   }
-
-  // Gom nhóm tin nhắn từ task bị abort trước đó
-  if (hasAbortedMessages(threadId)) {
-    const abortedMsgs = getAndClearAbortedMessages(threadId);
-
-    // Nếu task trước có tool đang chờ execute (đã được execute trong abort handler)
-    // thì KHÔNG merge messages cũ, chỉ xử lý messages mới
-    if (hasPendingToolExecution(threadId)) {
-      clearPendingToolExecution(threadId);
-      console.log(`[Bot] 🔄 Task trước có tool đã execute, xử lý ${batch.length} tin mới`);
-      debugLog(
-        'BUFFER',
-        `Previous task had tool executed, processing ${batch.length} new messages only`,
-      );
-    } else {
-      // Không có tool, merge messages như cũ
-      // KHÔNG clear history - giữ nguyên context conversation
-      messages = [...abortedMsgs, ...messages];
-      console.log(`[Bot] 🔄 Gom nhóm ${abortedMsgs.length} tin cũ + ${batch.length} tin mới`);
-      debugLog('BUFFER', `Merged ${abortedMsgs.length} aborted + ${batch.length} new messages`);
-    }
-  }
-
-  debugLog('BUFFER', `Processing batch of ${messages.length} messages for ${threadId}`);
-  logStep('buffer:process', { threadId, messageCount: messages.length });
-
-  const abortSignal = startTask(threadId);
+  processingLocks.add(threadId);
 
   try {
-    await handleMixedContent(api, messages, threadId, abortSignal);
-  } catch (e: any) {
-    if (e.message === 'Aborted' || abortSignal?.aborted) {
-      debugLog('BUFFER', `Task aborted (exception) for thread ${threadId}`);
-    } else {
-      logError('processBatch', e);
-      console.error('[Bot] Lỗi xử lý buffer:', e);
+    // Check maintenance mode - trả lời thông báo bảo trì và return
+    if (CONFIG.maintenanceMode?.enabled) {
+      const maintenanceMessage = CONFIG.maintenanceMode.message || '🔧 Bot đang trong chế độ bảo trì. Vui lòng thử lại sau!';
+      debugLog('BUFFER', `Maintenance mode enabled, sending maintenance message to ${threadId}`);
+      try {
+        const threadType = getThreadType(threadId);
+        await api.sendMessage(maintenanceMessage, threadId, threadType);
+        console.log(`[Bot] 🔧 Maintenance mode: Đã gửi thông báo bảo trì đến ${threadId}`);
+      } catch (e: any) {
+        logError('processBatch:maintenance', e);
+      }
+      return;
+    }
+
+    // Gom nhóm tin nhắn từ task bị abort trước đó
+    if (hasAbortedMessages(threadId)) {
+      const abortedMsgs = getAndClearAbortedMessages(threadId);
+
+      // Nếu task trước có tool đang chờ execute (đã được execute trong abort handler)
+      // thì KHÔNG merge messages cũ, chỉ xử lý messages mới
+      if (hasPendingToolExecution(threadId)) {
+        clearPendingToolExecution(threadId);
+        console.log(`[Bot] 🔄 Task trước có tool đã execute, xử lý ${batch.length} tin mới`);
+        debugLog(
+          'BUFFER',
+          `Previous task had tool executed, processing ${batch.length} new messages only`,
+        );
+      } else {
+        // Không có tool, merge messages như cũ
+        // KHÔNG clear history - giữ nguyên context conversation
+        messages = [...abortedMsgs, ...messages];
+        console.log(`[Bot] 🔄 Gom nhóm ${abortedMsgs.length} tin cũ + ${batch.length} tin mới`);
+        debugLog('BUFFER', `Merged ${abortedMsgs.length} aborted + ${batch.length} new messages`);
+      }
+    }
+
+    debugLog('BUFFER', `Processing batch of ${messages.length} messages for ${threadId}`);
+    logStep('buffer:process', { threadId, messageCount: messages.length });
+
+    const abortSignal = startTask(threadId);
+
+    try {
+      await handleMixedContent(api, messages, threadId, abortSignal);
+    } catch (e: any) {
+      if (e.message === 'Aborted' || abortSignal?.aborted) {
+        debugLog('BUFFER', `Task aborted (exception) for thread ${threadId}`);
+      } else {
+        logError('processBatch', e);
+        console.error('[Bot] Lỗi xử lý buffer:', e);
+      }
+    } finally {
+      // Nếu bị abort, lưu messages để gom nhóm sau
+      if (abortSignal.aborted) {
+        saveAbortedMessages(threadId, messages);
+        debugLog('BUFFER', `Task aborted, saved ${messages.length} messages for thread ${threadId}`);
+      }
+      stopTyping(threadId);
     }
   } finally {
-    // Nếu bị abort, lưu messages để gom nhóm sau
-    if (abortSignal.aborted) {
-      saveAbortedMessages(threadId, messages);
-      debugLog('BUFFER', `Task aborted, saved ${messages.length} messages for thread ${threadId}`);
-    }
-    stopTyping(threadId);
+    // Luôn xóa lock khi xong
+    processingLocks.delete(threadId);
   }
 }
 
@@ -193,7 +210,12 @@ export function addToBuffer(api: any, threadId: string, message: any) {
     initMessageBuffer();
   }
 
-  debugLog('BUFFER', `Added to stream: thread=${threadId}`);
+  // Gửi typing indicator NGAY LẬP TỨC để user biết bot đang xử lý
+  // Chỉ gửi 1 lần (không auto-refresh ở đây, để processBatch refresh sau)
+  const threadType = getThreadType(threadId);
+  api.sendTypingEvent(threadId, threadType).catch(() => {});
+
+  debugLog('BUFFER', `Added to stream: thread=${threadId}, typing sent`);
   messageSubject.next({ threadId, message, api });
 }
 

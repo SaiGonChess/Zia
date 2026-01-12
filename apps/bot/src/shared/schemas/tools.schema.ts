@@ -243,6 +243,10 @@ export const YouTubeSearchSchema = z.object({
   order: z.enum(['relevance', 'date', 'rating', 'viewCount', 'title']).optional(),
   videoDuration: z.enum(['any', 'short', 'medium', 'long']).optional(),
   pageToken: z.string().optional(),
+  /** Lọc video đăng sau ngày này (ISO 8601, VD: "2024-01-01T00:00:00Z") */
+  publishedAfter: z.string().optional(),
+  /** Lọc video đăng trước ngày này (ISO 8601) */
+  publishedBefore: z.string().optional(),
 });
 
 // YouTube Video Details params
@@ -309,6 +313,10 @@ export const GoogleSearchSchema = z
     start: z.coerce.number().min(1).optional(),
     searchType: z.enum(['web', 'image']).default('web'),
     safe: z.enum(['off', 'active']).default('off'),
+    /** Giới hạn kết quả theo thời gian: d[số] = ngày, w[số] = tuần, m[số] = tháng, y[số] = năm */
+    dateRestrict: z.string().optional(),
+    /** Sắp xếp: date (mới nhất) hoặc relevance (liên quan nhất) */
+    sort: z.enum(['date', 'relevance']).optional(),
   })
   .transform((data) => ({
     ...data,
@@ -699,9 +707,9 @@ export const TOOL_EXAMPLES: Record<string, string> = {
   nekosImages: `[tool:nekosImages]{"tags":"catgirl","rating":"safe","limit":1}[/tool]`,
   giphyGif: `[tool:giphyGif]{"mode":"search","query":"happy","limit":1}[/tool]`,
 
-  // System
-  googleSearch: `[tool:googleSearch]{"q":"từ khóa tìm kiếm","num":5}[/tool]`,
-  youtubeSearch: `[tool:youtubeSearch]{"q":"music video","maxResults":5}[/tool]`,
+  // System - TÌM KIẾM VỚI LỌC THỜI GIAN
+  googleSearch: `[tool:googleSearch]{"q":"tin tức hôm nay","num":5,"dateRestrict":"d1","sort":"date"}[/tool]`,
+  youtubeSearch: `[tool:youtubeSearch]{"q":"music video mới","maxResults":5,"order":"date","publishedAfter":"2024-01-01T00:00:00Z"}[/tool]`,
   youtubeVideo: `[tool:youtubeVideo]{"videoId":"dQw4w9WgXcQ"}[/tool]`,
   youtubeChannel: `[tool:youtubeChannel]{"channelId":"UC..."}[/tool]`,
   createChart: `[tool:createChart]{"type":"bar","title":"Biểu đồ","labels":["A","B","C"],"datasets":[{"label":"Data","data":[10,20,30]}]}[/tool]`,

@@ -17,6 +17,8 @@ import { CONFIG } from '../../../core/config/config.js';
 
 // In-memory cache để truy xuất nhanh theo index
 const messageCache = new Map<string, SentMessage[]>();
+// Index Map để tra cứu nhanh theo msgId - O(1) lookup
+const msgIdIndex = new Map<string, SentMessage>();
 const getMaxCachePerThread = () => CONFIG.messageStore?.maxCachePerThread ?? 20;
 
 /**
@@ -41,9 +43,20 @@ export function saveSentMessage(
     messageCache.set(threadId, []);
   }
   const cache = messageCache.get(threadId)!;
+  
+  // Nếu cache đầy, xóa tin cũ nhất khỏi index trước
+  if (cache.length >= getMaxCachePerThread()) {
+    const oldest = cache.shift();
+    if (oldest) {
+      msgIdIndex.delete(String(oldest.msgId));
+    }
+  }
+  
   cache.push(msg);
-  if (cache.length > getMaxCachePerThread()) {
-    cache.shift();
+  
+  // Lưu vào msgId index để tra cứu nhanh O(1)
+  if (msgId && msgId.trim() !== '') {
+    msgIdIndex.set(String(msgId), msg);
   }
 
   // Lưu vào database (async, không block)
@@ -112,6 +125,9 @@ export async function getLastSentMessage(threadId: string): Promise<SentMessage 
  * Xóa tin nhắn khỏi store sau khi thu hồi
  */
 export function removeSentMessage(threadId: string, msgId: string): void {
+  // Xóa khỏi index
+  msgIdIndex.delete(String(msgId));
+  
   // Xóa khỏi cache
   const cache = messageCache.get(threadId);
   if (cache) {
@@ -139,7 +155,14 @@ export function cleanupOldMessages(): void {
 
   for (const [threadId, messages] of messageCache) {
     const beforeCount = messages.length;
-    const filtered = messages.filter((m) => m.timestamp > oneHourAgo);
+    const filtered = messages.filter((m) => {
+      if (m.timestamp <= oneHourAgo) {
+        // Xóa khỏi index khi cleanup
+        msgIdIndex.delete(String(m.msgId));
+        return false;
+      }
+      return true;
+    });
     totalRemoved += beforeCount - filtered.length;
 
     if (filtered.length === 0) {
@@ -150,7 +173,7 @@ export function cleanupOldMessages(): void {
   }
 
   if (totalRemoved > 0) {
-    debugLog('MSG_STORE', `Cache cleanup: removed ${totalRemoved} old messages`);
+    debugLog('MSG_STORE', `Cache cleanup: removed ${totalRemoved} old messages, index size: ${msgIdIndex.size}`);
   }
 }
 
@@ -162,15 +185,15 @@ setInterval(cleanupOldMessages, cleanupIntervalMs);
  * Kiểm tra xem msgId có phải tin nhắn của bot không
  */
 export async function isBotMessage(msgId: string): Promise<boolean> {
-  // Check cache trước
-  for (const messages of messageCache.values()) {
-    if (messages.some((m) => m.msgId === msgId)) {
-      return true;
-    }
+  const msgIdStr = String(msgId);
+  
+  // Check index trước - O(1) lookup
+  if (msgIdIndex.has(msgIdStr)) {
+    return true;
   }
 
   // Fallback to DB
-  const dbMsg = await sentMessagesRepository.getByMsgId(msgId);
+  const dbMsg = await sentMessagesRepository.getByMsgId(msgIdStr);
   return dbMsg !== null;
 }
 
@@ -180,26 +203,27 @@ export async function isBotMessage(msgId: string): Promise<boolean> {
 export async function getBotMessageByMsgId(msgId: string): Promise<SentMessage | null> {
   const msgIdStr = String(msgId);
 
-  // Check cache trước
-  for (const messages of messageCache.values()) {
-    const found = messages.find((m) => String(m.msgId) === msgIdStr);
-    if (found) {
-      debugLog('MSG_STORE', `getBotMessageByMsgId: found in cache msgId=${msgIdStr}`);
-      return found;
-    }
+  // Check index trước - O(1) lookup
+  const indexed = msgIdIndex.get(msgIdStr);
+  if (indexed) {
+    debugLog('MSG_STORE', `getBotMessageByMsgId: found in index msgId=${msgIdStr}`);
+    return indexed;
   }
 
   // Fallback to DB
   const dbMsg = await sentMessagesRepository.getByMsgId(msgIdStr);
   if (dbMsg) {
     debugLog('MSG_STORE', `getBotMessageByMsgId: found in DB msgId=${msgIdStr}`);
-    return {
+    const result: SentMessage = {
       msgId: dbMsg.msgId,
       cliMsgId: dbMsg.cliMsgId || '',
       content: dbMsg.content || '',
       threadId: dbMsg.threadId,
       timestamp: dbMsg.timestamp.getTime(),
     };
+    // Cache vào index để lần sau tra cứu nhanh hơn
+    msgIdIndex.set(msgIdStr, result);
+    return result;
   }
 
   debugLog('MSG_STORE', `getBotMessageByMsgId: NOT found msgId=${msgIdStr}`);

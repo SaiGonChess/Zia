@@ -177,6 +177,13 @@ export function getBlockedUserIds(): string[] {
 }
 
 /**
+ * Kiểm tra user ID có bị chặn không
+ */
+export function isBlocked(userId: string): boolean {
+  return CONFIG.blockedUserIds?.includes(userId) ?? false;
+}
+
+/**
  * Lấy danh sách người dùng chưa được cấp phép từ file
  */
 export function getUnauthorizedUsers(): Array<{

@@ -4,8 +4,10 @@
 import { BaseModule, type ITool, type ModuleMetadata } from '../../core/index.js';
 import {
   blockUserTool,
+  checkBlockStatusTool,
   listBlockedUsersTool,
   qrCodeTool,
+  selfDefenseBlockTool,
   unblockUserTool,
   urlShortenerTool,
 } from './tools/index.js';
@@ -14,7 +16,7 @@ export class SystemModule extends BaseModule {
   readonly metadata: ModuleMetadata = {
     name: 'system',
     description: 'Hệ thống (Quản lý user, QR code, Rút gọn link)',
-    version: '1.2.0',
+    version: '1.3.0',
   };
 
   private _tools: ITool[] = [
@@ -23,6 +25,8 @@ export class SystemModule extends BaseModule {
     blockUserTool,
     unblockUserTool,
     listBlockedUsersTool,
+    selfDefenseBlockTool,
+    checkBlockStatusTool,
   ];
 
   get tools(): ITool[] {

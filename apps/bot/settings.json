@@ -7,7 +7,7 @@
     "rateLimitMs": 0,
     "maxTokenHistory": 300000,
     "maxInputTokens": 200000,
-    "selfListen": false,
+    "selfListen": true,
     "logging": true,
     "useStreaming": true,
     "useCharacter": false,
@@ -54,8 +54,8 @@
     "loadGroup": false
   },
   "buffer": {
-    "delayMs": 2500,
-    "typingRefreshMs": 3000
+    "delayMs": 1500,
+    "typingRefreshMs": 2000
   },
   "fetch": {
     "timeoutMs": 60000,
@@ -91,15 +91,18 @@
   },
   "allowedUserIds": [
     "8867542199450989031",
-    "4292093347583012472"
+    "4292093347583012472",
+    "366810236027049983"
   ],
-  "blockedUserIds": [],
+  "blockedUserIds": [
+    "7091288063960780417"
+  ],
   "logger": {
     "maxLinesPerFile": 1000,
     "logCacheThreshold": 1000
   },
   "reaction": {
-    "debounceMs": 2000
+    "debounceMs": 800
   },
   "friendRequest": {
     "autoAcceptDelayMinMs": 2000,
@@ -188,13 +191,13 @@
     "cacheSize": 10000
   },
   "responseHandler": {
-    "reactionDelayMs": 300,
-    "chunkDelayMs": 300,
-    "stickerDelayMs": 800,
-    "cardDelayMs": 500,
-    "messageDelayMinMs": 500,
-    "messageDelayMaxMs": 1000,
-    "imageDelayMs": 500
+    "reactionDelayMs": 200,
+    "chunkDelayMs": 200,
+    "stickerDelayMs": 500,
+    "cardDelayMs": 300,
+    "messageDelayMinMs": 300,
+    "messageDelayMaxMs": 600,
+    "imageDelayMs": 300
   },
   "jikanRateLimitRetryMs": 2000,
   "websocketConnectTimeoutMs": 2000,
